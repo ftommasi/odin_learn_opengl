@@ -1,6 +1,8 @@
 package coordinates;
 
 import "core:fmt"
+import glm "core:math/linalg/glsl"
+//import hlm "core:math/linalg/hlsl" ??
 
 import glfw "vendor:glfw"
 import gl "vendor:OpenGL"
@@ -100,18 +102,44 @@ main :: proc() {
         gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
         
+        
         width: i32;
         height:i32;
         nrChannels:i32;
-        data := stb.load("wall.jpg",&width,&height,&nrChannels,0);
+
+        data := stb.load("container.jpg",&width,&height,&nrChannels,0);
         if data != nil{
             gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, data);
             gl.GenerateMipmap(gl.TEXTURE_2D);
         }else{
-            fmt.println("Failed stb.load() for wall.jpg");
+            fmt.println("Failed stb.load() for container.jpg");
         }
         defer stb.image_free(data);
 
+        // load and create a texture 
+        // -------------------------
+        texture2: u32;
+        //texture2: u32;
+
+        // texture 2
+        // ---------
+        gl.GenTextures(1, &texture2);
+        gl.BindTexture(gl.TEXTURE_2D, texture2); 
+        // set the texture wrapping parameters
+        gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);	// set texture wrapping to gl.REPEAT (default wrapping method)
+        gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+        // set texture filtering parameters
+        gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        data2 := stb.load("awesomeface.png",&width,&height,&nrChannels,0);
+        if data != nil{
+            gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, data2);
+            gl.GenerateMipmap(gl.TEXTURE_2D);
+        }else{
+            fmt.println("Failed stb.load() for awesomeface.png");
+        }
+        defer stb.image_free(data2);
 
         // gl.UseProgram(shader_program);
         program_id: u32; ok: bool
@@ -123,6 +151,7 @@ main :: proc() {
         gl.UseProgram(program_id);
         
         gl.Uniform1i(gl.GetUniformLocation(program_id, "texture1"), 0);
+        gl.Uniform1i(gl.GetUniformLocation(program_id, "texture2"), 1);
         for (!glfw.WindowShouldClose(window_handle)){
             process_input(window_handle);
             glfw.PollEvents();
@@ -132,6 +161,9 @@ main :: proc() {
             // bind textures on corresponding texture units
             gl.ActiveTexture(gl.TEXTURE0);
             gl.BindTexture(gl.TEXTURE_2D, texture1);
+
+            gl.ActiveTexture(gl.TEXTURE1);
+            gl.BindTexture(gl.TEXTURE_2D, texture2);
 
             gl.UseProgram(program_id);
             gl.BindVertexArray(VAO);
