@@ -44,11 +44,55 @@ main :: proc() {
         };
 
         vertices := [?] f32 {
+            //part 1
             // positions          // colors           // texture coords
-            0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
-            0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
-            -0.5,-0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
-            -0.5, 0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0,    // top left 
+            //0.5,  0.5, 0.0,   1.0, 0.0, 0.0,   1.0, 1.0,   // top right
+            //0.5, -0.5, 0.0,   0.0, 1.0, 0.0,   1.0, 0.0,   // bottom right
+            //-0.5,-0.5, 0.0,   0.0, 0.0, 1.0,   0.0, 0.0,   // bottom left
+            //-0.5, 0.5, 0.0,   1.0, 1.0, 0.0,   0.0, 1.0,    // top left 
+
+            //part 2
+            -0.5, -0.5, -0.5,  0.0, 0.0,
+             0.5, -0.5, -0.5,  1.0, 0.0,
+             0.5,  0.5, -0.5,  1.0, 1.0,
+             0.5,  0.5, -0.5,  1.0, 1.0,
+            -0.5,  0.5, -0.5,  0.0, 1.0,
+            -0.5, -0.5, -0.5,  0.0, 0.0,
+
+            -0.5, -0.5,  0.5,  0.0, 0.0,
+             0.5, -0.5,  0.5,  1.0, 0.0,
+             0.5,  0.5,  0.5,  1.0, 1.0,
+             0.5,  0.5,  0.5,  1.0, 1.0,
+            -0.5,  0.5,  0.5,  0.0, 1.0,
+            -0.5, -0.5,  0.5,  0.0, 0.0,
+
+            -0.5,  0.5,  0.5,  1.0, 0.0,
+            -0.5,  0.5, -0.5,  1.0, 1.0,
+            -0.5, -0.5, -0.5,  0.0, 1.0,
+            -0.5, -0.5, -0.5,  0.0, 1.0,
+            -0.5, -0.5,  0.5,  0.0, 0.0,
+            -0.5,  0.5,  0.5,  1.0, 0.0,
+
+             0.5,  0.5,  0.5,  1.0, 0.0,
+             0.5,  0.5, -0.5,  1.0, 1.0,
+             0.5, -0.5, -0.5,  0.0, 1.0,
+             0.5, -0.5, -0.5,  0.0, 1.0,
+             0.5, -0.5,  0.5,  0.0, 0.0,
+             0.5,  0.5,  0.5,  1.0, 0.0,
+
+            -0.5, -0.5, -0.5,  0.0, 1.0,
+             0.5, -0.5, -0.5,  1.0, 1.0,
+             0.5, -0.5,  0.5,  1.0, 0.0,
+             0.5, -0.5,  0.5,  1.0, 0.0,
+            -0.5, -0.5,  0.5,  0.0, 0.0,
+            -0.5, -0.5, -0.5,  0.0, 1.0,
+
+            -0.5,  0.5, -0.5,  0.0, 1.0,
+             0.5,  0.5, -0.5,  1.0, 1.0,
+             0.5,  0.5,  0.5,  1.0, 0.0,
+             0.5,  0.5,  0.5,  1.0, 0.0,
+            -0.5,  0.5,  0.5,  0.0, 0.0,
+            -0.5,  0.5, -0.5,  0.0, 1.0,
         };
 
         indices := [?] i32 {
@@ -70,21 +114,19 @@ main :: proc() {
         gl.BindBuffer(gl.ARRAY_BUFFER,VBO)
         gl.BufferData(gl.ARRAY_BUFFER,size_of(vertices),&vertices,gl.STATIC_DRAW)
 
-        gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER,EBO)
-        gl.BufferData(gl.ELEMENT_ARRAY_BUFFER,size_of(indices),&indices,gl.STATIC_DRAW)
+        //gl.BindBuffer(gl.ELEMENT_ARRAY_BUFFER,EBO)
+        //gl.BufferData(gl.ELEMENT_ARRAY_BUFFER,size_of(indices),&indices,gl.STATIC_DRAW)
 
         //Position data
-        gl.VertexAttribPointer(0,3,gl.FLOAT,gl.FALSE, size_of(f32)*8, cast(uintptr)0)
+        gl.VertexAttribPointer(0,3,gl.FLOAT,gl.FALSE, size_of(f32)*5, cast(uintptr)0)
         gl.EnableVertexAttribArray(0)
 
         //Color data
-        gl.VertexAttribPointer(1,3,gl.FLOAT,gl.FALSE, size_of(f32)*8, cast(uintptr)(3*size_of(f32)))
+        gl.VertexAttribPointer(1,2,gl.FLOAT,gl.FALSE, size_of(f32)*5, cast(uintptr)(3*size_of(f32)))
         gl.EnableVertexAttribArray(1)
 
-        //Textyre data
-        gl.VertexAttribPointer(2,3,gl.FLOAT,gl.FALSE, size_of(f32)*8, cast(uintptr)(6*size_of(f32)))
-        gl.EnableVertexAttribArray(2)
-
+        
+        gl.Enable(gl.DEPTH_TEST);
 
         // load and create a texture 
         // -------------------------
@@ -159,7 +201,7 @@ main :: proc() {
             process_input(window_handle);
             glfw.PollEvents();
             gl.ClearColor(0.2,0.3,0.3,1.0);
-            gl.Clear(gl.COLOR_BUFFER_BIT);
+            gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
             // bind textures on corresponding texture units
             gl.ActiveTexture(gl.TEXTURE0);
@@ -174,6 +216,11 @@ main :: proc() {
             model_vec : glm.vec3 = {1,0,0};
             model *= glm.mat4Rotate(model_vec,glm.radians_f32(-55)); 
             modelLoc := gl.GetUniformLocation(program_id,"model");
+            
+            //This is part2
+            cube_rotate_vec : glm.vec3 = {0.5,1,0};
+            model *= glm.mat4Rotate(cube_rotate_vec, cast(f32)glfw.GetTime() * glm.radians_f32(50));
+
             gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, &model[0][0]);
 
             view:= glm.mat4(1.0);
@@ -191,7 +238,11 @@ main :: proc() {
             
 
             gl.BindVertexArray(VAO);
-            gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
+            //part 1
+            //gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
+
+            //part2
+            gl.DrawArrays(gl.TRIANGLES, 0, 36);
             
 
             glfw.SwapBuffers(window_handle);
