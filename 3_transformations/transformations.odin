@@ -1,4 +1,4 @@
-package coordinates;
+package transformations;
 
 import "core:fmt"
 import glm "core:math/linalg/glsl"
