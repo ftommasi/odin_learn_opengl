@@ -169,6 +169,18 @@ main :: proc() {
             gl.BindTexture(gl.TEXTURE_2D, texture2);
 
             gl.UseProgram(program_id);
+
+            transform := glm.mat4(1.0);
+            vec1: glm.vec3 = {1,1,1};
+            vec2: glm.vec3 = {0.5,0.5,0.5};
+            rads :=  glm.radians_f32(90.0);
+            transform = glm.mat4Rotate(vec1,cast(f32)glfw.GetTime());
+            transform = glm.mat4Scale(vec2);
+            
+            transformLoc := gl.GetUniformLocation(program_id,"transform");
+            gl.UniformMatrix4fv(transformLoc, 1, gl.FALSE, &transform[0][0]);
+            
+
             gl.BindVertexArray(VAO);
             gl.DrawElements(gl.TRIANGLES, 6, gl.UNSIGNED_INT, nil);
             
