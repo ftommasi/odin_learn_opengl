@@ -119,6 +119,9 @@ main :: proc() {
         // load and create a texture 
         // -------------------------
         texture2: u32;
+        width2: i32;
+        height2:i32;
+        nrChannels2:i32;
         //texture2: u32;
 
         // texture 2
@@ -132,9 +135,9 @@ main :: proc() {
         gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
         gl.TexParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
-        data2 := stb.load("awesomeface.png",&width,&height,&nrChannels,0);
-        if data != nil{
-            gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGB, width, height, 0, gl.RGB, gl.UNSIGNED_BYTE, data2);
+        data2 := stb.load("awesomeface.png",&width2,&height2,&nrChannels2,0);
+        if data2 != nil{
+            gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, data2);
             gl.GenerateMipmap(gl.TEXTURE_2D);
         }else{
             fmt.println("Failed stb.load() for awesomeface.png");
