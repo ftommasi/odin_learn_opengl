@@ -197,6 +197,21 @@ main :: proc() {
         
         gl.Uniform1i(gl.GetUniformLocation(program_id, "texture1"), 0);
         gl.Uniform1i(gl.GetUniformLocation(program_id, "texture2"), 1);
+
+
+        cubePositions := [?] glm.vec3{
+    glm.vec3{ 0.0,  0.0,  0.0}, 
+    glm.vec3{ 2.0,  5.0, -15.0}, 
+    glm.vec3{-1.5, -2.2, -2.5},  
+    glm.vec3{-3.8, -2.0, -12.3},  
+    glm.vec3{ 2.4, -0.4, -3.5},  
+    glm.vec3{-1.7,  3.0, -7.5},  
+    glm.vec3{ 1.3, -2.0, -2.5},  
+    glm.vec3{ 1.5,  2.0, -2.5}, 
+    glm.vec3{ 1.5,  0.2, -1.5}, 
+    glm.vec3{-1.3,  1.0, -1.5}  ,
+};
+
         for (!glfw.WindowShouldClose(window_handle)){
             process_input(window_handle);
             glfw.PollEvents();
@@ -243,6 +258,19 @@ main :: proc() {
 
             //part2
             gl.DrawArrays(gl.TRIANGLES, 0, 36);
+
+            for pos in cubePositions {
+                cur_model := glm.mat4(1.0);
+                cur_model *= glm.mat4Translate(pos);
+
+                cube_rotate_vec : glm.vec3 = {0.5,1,0};
+                cur_model *= glm.mat4Rotate(cube_rotate_vec*pos, cast(f32)glfw.GetTime() * glm.radians_f32(50));
+
+                cur_modelLoc := gl.GetUniformLocation(program_id,"model");
+                gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, &cur_model[0][0]);
+                gl.DrawArrays(gl.TRIANGLES, 0, 36);
+
+            }
             
 
             glfw.SwapBuffers(window_handle);
