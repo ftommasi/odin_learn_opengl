@@ -214,8 +214,9 @@ main :: proc() {
     };
 
     
-    camera_pos := glm.vec3{0,0,0};
+    camera_pos := glm.vec3{0,0,3};
     camera_target := glm.vec3{0,0,0};
+    camera_front := glm.vec3{0,0,-1};
     camera_direction := glm.normalize(camera_pos - camera_target)
 
     camera_up := glm.vec3{0,1,0};
@@ -226,8 +227,28 @@ main :: proc() {
     radius :f32 = 10.0;
 
 
+    camera_speed : f32 = 0
+    last_time :f32 = cast(f32)0
+    delta_time := last_time
     for (!glfw.WindowShouldClose(window_handle)){
         process_input(window_handle);
+        current_time :=  cast(f32)glfw.GetTime()
+        delta_time = current_time - last_time
+        last_time = current_time
+        camera_speed = 5.5 * delta_time
+
+        if glfw.GetKey(window_handle, glfw.KEY_W) == glfw.PRESS {
+            camera_pos += camera_speed * camera_front;
+        }
+        if glfw.GetKey(window_handle, glfw.KEY_S) == glfw.PRESS{
+            camera_pos -= camera_speed * camera_front;
+        }
+        if glfw.GetKey(window_handle, glfw.KEY_A) == glfw.PRESS{
+            camera_pos -= glm.normalize(glm.cross_vec3(camera_front,camera_up)) * camera_speed;
+        }
+        if glfw.GetKey(window_handle, glfw.KEY_D) == glfw.PRESS {
+            camera_pos += glm.normalize(glm.cross_vec3(camera_front,camera_up)) * camera_speed;
+        }
         glfw.PollEvents();
         gl.ClearColor(0.2,0.3,0.3,1.0);
         gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -257,8 +278,11 @@ main :: proc() {
         view_vec : glm.vec3 = {0,0,-3};
         camX := math.sin_f32(cast(f32)glfw.GetTime()) * radius;
         camZ := math.cos_f32(cast(f32)glfw.GetTime()) * radius;
-        view := glm.mat4LookAt(glm.vec3{camX,0,camZ},glm.vec3{0,0,0},glm.vec3{0,1,0});
+        //view := glm.mat4LookAt(glm.vec3{camX,0,camZ},glm.vec3{0,0,0},glm.vec3{0,1,0});
+        view := glm.mat4LookAt(camera_pos,camera_pos + camera_front ,camera_up);
         view *= glm.mat4Translate(view_vec); 
+
+
 
         viewLoc := gl.GetUniformLocation(program_id,"view");
         gl.UniformMatrix4fv(viewLoc, 1, gl.FALSE, &view[0][0]);
@@ -304,7 +328,7 @@ process_input:: proc(window: glfw.WindowHandle){
     if(glfw.GetKey(window,glfw.KEY_ESCAPE) == glfw.PRESS){
         glfw.SetWindowShouldClose(window, true)
     }
-    if(glfw.GetKey(window, glfw.KEY_W) == glfw.PRESS){
+    if(glfw.GetKey(window, glfw.KEY_G) == glfw.PRESS){
         gl.PolygonMode(gl.FRONT_AND_BACK, gl.LINE);
     }
 
