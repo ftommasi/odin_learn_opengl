@@ -17,6 +17,25 @@ WINDOW_HEIGHT :: 480
 GL_VERSION_MAJOR :: 4
 GL_VERSION_MINOR :: 6
 
+camera_pos := glm.vec3{0,0,3};
+camera_target := glm.vec3{0,0,0};
+camera_front := glm.vec3{0,0,-1};
+camera_direction := glm.normalize(camera_pos - camera_target)
+
+camera_up := glm.vec3{0,1,0};
+camera_right := glm.cross(camera_up,camera_direction);
+
+
+
+radius :f32 = 10.0;
+
+
+camera_speed : f32 = 0
+last_time :f32 = cast(f32)0
+delta_time := last_time
+
+view_direction := glm.vec3{0,0,0} 
+
 main :: proc() {
     //initialise glfw
     glfw.Init()
@@ -31,6 +50,7 @@ main :: proc() {
     glfw.MakeContextCurrent(window_handle);
     glfw.SwapInterval(0);
     glfw.SetFramebufferSizeCallback(window_handle,frame_buffer_size_callback)
+    glfw.SetCursorPosCallback(window_handle,mouse_callback)
     //OpenGL set up
     gl.load_up_to(GL_VERSION_MAJOR, GL_VERSION_MINOR, proc(p: rawptr, name: cstring) {
         (^rawptr)(p)^ = glfw.GetProcAddress(name);
@@ -213,23 +233,12 @@ main :: proc() {
         glm.vec3{-1.3,  1.0, -1.5}  ,
     };
 
-    
-    camera_pos := glm.vec3{0,0,3};
-    camera_target := glm.vec3{0,0,0};
-    camera_front := glm.vec3{0,0,-1};
-    camera_direction := glm.normalize(camera_pos - camera_target)
 
-    camera_up := glm.vec3{0,1,0};
-    camera_right := glm.cross(camera_up,camera_direction);
+    direction : glm.vec3;
+    direction.x = math.cos_f32(glm.radians_f32(yaw)) * math.cos_f32(glm.radians_f32(pitch))
+    direction.x = math.sin_f32(glm.radians_f32(pitch))
+    direction.z = math.sin_f32(glm.radians_f32(yaw))* math.cos_f32(glm.radians_f32(pitch))
 
-
-
-    radius :f32 = 10.0;
-
-
-    camera_speed : f32 = 0
-    last_time :f32 = cast(f32)0
-    delta_time := last_time
     for (!glfw.WindowShouldClose(window_handle)){
         process_input(window_handle);
         current_time :=  cast(f32)glfw.GetTime()
@@ -272,6 +281,9 @@ main :: proc() {
         model *= glm.mat4Rotate(cube_rotate_vec, cast(f32)glfw.GetTime() * glm.radians_f32(50));
 
         gl.UniformMatrix4fv(modelLoc, 1, gl.FALSE, &model[0][0]);
+
+
+
 
         //view:= glm.mat4(1.0);
         //Note that we translate in the opposite direction that we want to move in
@@ -337,4 +349,46 @@ process_input:: proc(window: glfw.WindowHandle){
     }
 }
 
+firstMouse := false; //global static
+yaw : f32 = 90.0
+pitch : f32 = 45.0
+lastX :f32= 0;
+lastY :f32= 0;
+
+
+mouse_callback :: proc "c" (window: glfw.WindowHandle, xpos: f64, ypos: f64)
+{
+
+    if firstMouse
+    {
+        lastX = cast(f32)xpos;
+        lastY = cast(f32)ypos;
+        firstMouse = false;
+    }
+
+    xoffset := cast(f32)xpos - lastX;
+    yoffset := lastY - cast(f32)ypos; 
+    lastX = cast(f32)xpos;
+    lastY = cast(f32)ypos;
+
+    sensitivity : f32 = 0.1;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw   += xoffset;
+    pitch += yoffset;
+
+    if pitch > 89.0 {
+        pitch = 89.0;
+    }
+    if pitch < -89.0 {
+        pitch = -89.0;
+    }
+
+    direction : glm.vec3;
+    direction.x = math.cos(glm.radians_f32(yaw)) * math.cos(glm.radians_f32(pitch));
+    direction.y = math.sin(glm.radians_f32(pitch));
+    direction.z = math.sin(glm.radians_f32(yaw)) * math.cos(glm.radians_f32(pitch));
+    camera_front= glm.normalize_vec3(direction);
+}  
 
