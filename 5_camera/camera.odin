@@ -33,6 +33,7 @@ radius :f32 = 10.0;
 camera_speed : f32 = 0
 last_time :f32 = cast(f32)0
 delta_time := last_time
+fov : f32 = 45.0
 
 view_direction := glm.vec3{0,0,0} 
 
@@ -51,6 +52,7 @@ main :: proc() {
     glfw.SwapInterval(0);
     glfw.SetFramebufferSizeCallback(window_handle,frame_buffer_size_callback)
     glfw.SetCursorPosCallback(window_handle,mouse_callback)
+    glfw.SetScrollCallback(window_handle,scroll_callback)
     //OpenGL set up
     gl.load_up_to(GL_VERSION_MAJOR, GL_VERSION_MINOR, proc(p: rawptr, name: cstring) {
         (^rawptr)(p)^ = glfw.GetProcAddress(name);
@@ -301,7 +303,7 @@ main :: proc() {
         projection:= glm.mat4(1.0);
 
         projectionLoc := gl.GetUniformLocation(program_id,"projection");
-        projection *= glm.mat4Perspective(glm.radians_f32(45.0), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 100.0);
+        projection *= glm.mat4Perspective(glm.radians_f32(fov), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 100.0);
         gl.UniformMatrix4fv(projectionLoc, 1, gl.FALSE, &projection[0][0]);
 
 
@@ -390,5 +392,16 @@ mouse_callback :: proc "c" (window: glfw.WindowHandle, xpos: f64, ypos: f64)
     direction.y = math.sin(glm.radians_f32(pitch));
     direction.z = math.sin(glm.radians_f32(yaw)) * math.cos(glm.radians_f32(pitch));
     camera_front= glm.normalize_vec3(direction);
+}  
+
+scroll_callback :: proc "c" (window: glfw.WindowHandle, xoffset: f64, yoffset: f64)
+{
+ fov -= cast(f32)yoffset
+    if fov < 1.0 {
+        fov = 10.0
+    }
+    if fov > 45.0 {
+        fov = 45.0
+    }
 }  
 
