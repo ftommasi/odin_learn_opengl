@@ -113,31 +113,28 @@ main :: proc() {
     };
 
 
-    lightVAO: u32;
-    gl.GenVertexArrays(1,&lightVAO);
-    gl.BindVertexArray(lightVAO);
 
     cubeVAO: u32;
     gl.GenVertexArrays(1,&cubeVAO);
     gl.BindVertexArray(cubeVAO);
 
 
-    lightVBO : u32;
-    gl.GenBuffers(1,&lightVBO);
-
     cubeVBO : u32;
     gl.GenBuffers(1,&cubeVBO);
 
     
     //both light source and cube are cubes. We can re-use vertices
-
-    gl.BindBuffer(gl.ARRAY_BUFFER,lightVBO)
-    gl.BufferData(gl.ARRAY_BUFFER,size_of(vertices),&vertices,gl.STATIC_DRAW)
-
     gl.BindBuffer(gl.ARRAY_BUFFER,cubeVBO)
     gl.BufferData(gl.ARRAY_BUFFER,size_of(vertices),&vertices,gl.STATIC_DRAW)
 
     //Position data
+    gl.VertexAttribPointer(0,3,gl.FLOAT,gl.FALSE, size_of(f32)*3, cast(uintptr)0)
+    gl.EnableVertexAttribArray(0)
+
+
+    lightVAO: u32;
+    gl.GenVertexArrays(1,&lightVAO);
+    gl.BindVertexArray(lightVAO);
     gl.VertexAttribPointer(0,3,gl.FLOAT,gl.FALSE, size_of(f32)*3, cast(uintptr)0)
     gl.EnableVertexAttribArray(0)
 
@@ -154,6 +151,7 @@ main :: proc() {
     gl.UseProgram(cube_program_id);
 
     gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "objectColor"), 1.0,0.5,0.3);
+    gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "lightColor"), 1.0,1.0,1.0);
 
     light_program_id: u32; ok_light: bool
     if light_program_id, ok_light = gl.load_shaders("./light.vs", "./light.fs"); !ok_light {
@@ -161,8 +159,6 @@ main :: proc() {
         return
     }
     defer gl.DeleteProgram(light_program_id)
-    gl.UseProgram(light_program_id);
-    gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "lightColor"), 1.0,1.0,1.0);
 
 
     cubePosition := glm.vec3{ 0.0,  0.0,  0.0}
@@ -238,15 +234,16 @@ main :: proc() {
         gl.DrawArrays(gl.TRIANGLES, 0, 36);
 
 
+        gl.BindVertexArray(lightVAO);
         gl.UseProgram(light_program_id);
         light_model:= glm.mat4(1.0);
         light_model_vec : glm.vec3 = {1,0,0};
-        light_model *= glm.mat4Rotate(light_model_vec,glm.radians_f32(-55)); 
+        //light_model *= glm.mat4Rotate(light_model_vec,glm.radians_f32(-55)); 
         light_modelLoc := gl.GetUniformLocation(light_program_id,"model");
 
         light_view:= glm.mat4(1.0);
 
-        gl.UniformMatrix4fv(light_modelLoc, 1, gl.FALSE, &cube_model[0][0]);
+        gl.UniformMatrix4fv(light_modelLoc, 1, gl.FALSE, &light_model[0][0]);
 
 
 
@@ -258,8 +255,9 @@ main :: proc() {
         light_projection *= glm.mat4Perspective(glm.radians_f32(fov), WINDOW_WIDTH / WINDOW_HEIGHT, 0.1, 100.0);
         gl.UniformMatrix4fv(light_projectionLoc, 1, gl.FALSE, &light_projection[0][0]);
 
-        gl.BindVertexArray(lightVAO);
         light_model *= glm.mat4Translate(lightPosition);
+        light_rotate_vec : glm.vec3 = {0.5,1,0};
+        light_model *= glm.mat4Rotate(light_rotate_vec, cast(f32)glfw.GetTime() * glm.radians_f32(50));
 
         gl.UniformMatrix4fv(light_modelLoc, 1, gl.FALSE, &light_model[0][0]);
         gl.DrawArrays(gl.TRIANGLES, 0, 36);
