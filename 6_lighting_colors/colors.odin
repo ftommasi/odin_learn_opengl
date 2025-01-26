@@ -169,7 +169,7 @@ main :: proc() {
     direction.x = math.cos_f32(glm.radians_f32(yaw)) * math.cos_f32(glm.radians_f32(pitch))
     direction.x = math.sin_f32(glm.radians_f32(pitch))
     direction.z = math.sin_f32(glm.radians_f32(yaw))* math.cos_f32(glm.radians_f32(pitch))
-
+    glfw.SetInputMode(window_handle,glfw.CURSOR,glfw.CURSOR_DISABLED)
     for (!glfw.WindowShouldClose(window_handle)){
         process_input(window_handle);
         current_time :=  cast(f32)glfw.GetTime()
@@ -240,8 +240,15 @@ main :: proc() {
         light_model_vec : glm.vec3 = {1,0,0};
         //light_model *= glm.mat4Rotate(light_model_vec,glm.radians_f32(-55)); 
         light_modelLoc := gl.GetUniformLocation(light_program_id,"model");
-
+        
+        //PROTIP: if the view matrix for any given object is not projected against the camera like this it looks like a HUD element. Try to uncomment below and see
         light_view:= glm.mat4(1.0);
+        camX = math.sin_f32(cast(f32)glfw.GetTime()) * radius;
+        camZ = math.cos_f32(cast(f32)glfw.GetTime()) * radius;
+        //view := glm.mat4LookAt(glm.vec3{camX,0,camZ},glm.vec3{0,0,0},glm.vec3{0,1,0});
+        light_view = glm.mat4LookAt(camera_pos,camera_pos + camera_front ,camera_up);
+        light_view_vec : glm.vec3 = {0,0,-3};
+        light_view *= glm.mat4Translate(light_view_vec); 
 
         gl.UniformMatrix4fv(light_modelLoc, 1, gl.FALSE, &light_model[0][0]);
 
