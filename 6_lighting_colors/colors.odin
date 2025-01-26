@@ -162,7 +162,7 @@ main :: proc() {
 
 
     cubePosition := glm.vec3{ 0.0,  0.0,  0.0}
-    lightPosition := glm.vec3{ 2.0,  5.0, -15.0}
+    lightPosition := glm.vec3{ 1.1,  2.0, -5.0}
 
 
     direction : glm.vec3;
