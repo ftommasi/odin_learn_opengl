@@ -148,8 +148,14 @@ main :: proc() {
     defer gl.DeleteProgram(cube_program_id)
     gl.UseProgram(cube_program_id);
 
-    cubePosition := glm.vec3{ 0.0,  0.0,  -4.0}
-    lightPosition := glm.vec3{ 2.1,  2.0, -2.0}
+    cubePosition := glm.vec3{ 0.3,  0.0,  -4.0}
+    lightPosition := glm.vec3{ 1.2,  1.0, 2.0}
+    light_target := glm.vec3{0,0,0};
+    light_front := glm.vec3{0,0,1};
+    light_direction := glm.normalize(lightPosition - light_target)
+    
+    light_up := glm.vec3{0,1,0};
+    light_right := glm.cross(light_up,light_direction);
     gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "objectColor"), 1.0,0.5,0.3);
     gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "lightColor"), 1.0,1.0,1.0);
     gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "lightPos"), lightPosition.x,lightPosition.y,lightPosition.z);
@@ -216,16 +222,17 @@ main :: proc() {
         gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "objectColor"), 1.0,0.5,0.3);
         gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "lightColor"), 1.0,1.0,1.0);
         gl.Uniform3f(gl.GetUniformLocation(cube_program_id, "lightPos"), lightPosition.x,lightPosition.y,lightPosition.z);
+        gl.Uniform3f(gl.GetUniformLocation(light_program_id,"viewPos"), camera_pos.x,camera_pos.y,camera_pos.z);
 
         cube_model:= glm.mat4(1.0);
         cube_model_vec : glm.vec3 = {1,0,0};
-        cube_model *= glm.mat4Rotate(cube_model_vec,glm.radians_f32(-55)); 
+        //cube_model *= glm.mat4Rotate(cube_model_vec,glm.radians_f32(-55)); 
         cube_modelLoc := gl.GetUniformLocation(cube_program_id,"model");
 
         //This is part2
-        cube_rotate_vec : glm.vec3 = {0.5,1,0};
+        //cube_rotate_vec : glm.vec3 = {0.5,1,0};
 
-        cube_model *= glm.mat4Rotate(cube_rotate_vec,  glm.radians_f32(50));
+        //cube_model *= glm.mat4Rotate(cube_rotate_vec,  glm.radians_f32(50));
 
         gl.UniformMatrix4fv(cube_modelLoc, 1, gl.FALSE, &cube_model[0][0]);
 
@@ -252,13 +259,14 @@ main :: proc() {
         gl.UniformMatrix4fv(cube_projectionLoc, 1, gl.FALSE, &cube_projection[0][0]);
 
         gl.BindVertexArray(cubeVAO);
-        cube_model *= glm.mat4Translate(cubePosition);
+        //cube_model *= glm.mat4Translate(cubePosition);
         gl.UniformMatrix4fv(cube_modelLoc, 1, gl.FALSE, &cube_model[0][0]);
         gl.DrawArrays(gl.TRIANGLES, 0, 36);
 
 
         gl.BindVertexArray(lightVAO);
         gl.UseProgram(light_program_id);
+
         light_model:= glm.mat4(1.0);
         light_model_vec : glm.vec3 = {1,0,0};
         //light_model *= glm.mat4Rotate(light_model_vec,glm.radians_f32(-55)); 
@@ -320,10 +328,10 @@ process_input:: proc(window: glfw.WindowHandle){
 }
 
 firstMouse := true; //global static
-yaw : f32 = 90.0
-pitch : f32 = 45.0
-lastX :f32= 0;
-lastY :f32= 0;
+yaw :f32 = 90.0
+pitch :f32 = 45.0
+lastX :f32 = cast(f32)WINDOW_WIDTH;
+lastY :f32 = cast(f32)WINDOW_HEIGHT;
 
 
 mouse_callback :: proc "c" (window: glfw.WindowHandle, xpos: f64, ypos: f64)
